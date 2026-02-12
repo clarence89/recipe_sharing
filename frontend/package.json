@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "axios": "^1.13.5",
+    "axios-retry": "^4.5.0",
     "uuid": "^13.0.0",
     "vue": "^3.5.25",
     "zod": "^4.3.6"

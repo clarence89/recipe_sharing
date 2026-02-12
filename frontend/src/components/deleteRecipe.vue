@@ -48,7 +48,6 @@ const recipe = reactive({
 async function deleteRecipe() {
     state.errors = {}
     state.loading = true
-    const prop_data = { ...props.recipe }
     try {
         emit("remove", recipe.id)
         await api.delete(`/recipes/${props.recipe.id}`)
