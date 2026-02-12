@@ -37,7 +37,7 @@
 </template>
 
 <script setup>
-import { onMounted, reactive, ref, watch, toRaw } from "vue";
+import { onMounted, reactive, ref, watch, toRaw, onUnmounted } from "vue";
 import debounce from "../utils/debouncer.js";
 import AddRecipe from "./addEditRecipe.vue";
 import AddEditRecipe from "./addEditRecipe.vue";
