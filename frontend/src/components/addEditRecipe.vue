@@ -1,5 +1,6 @@
 <template>
-    <button class="btn" @click="openModal()">{{ props.recipe ? "Edit" : "Add" }}</button>
+    <button class="btn" :class="props.recipe ? 'btn-sm btn-warning' : ''" @click="openModal()">{{ props.recipe ? "Edit"
+        : "Add" }}</button>
     <dialog ref="modalRef" class="modal">
         <div class="modal-box">
             <fieldset class="fieldset p-4">
@@ -18,10 +19,10 @@
                         @keyup.enter="addIngredient" />
                     <button class="btn" @click="addIngredient">+</button>
                 </div>
-                <p v-if="state.errors.ingredienta" class="text-red-500 text-sm">
+                <p v-if="state.errors.ingredients" class="text-red-500 text-sm">
                     {{ state.errors.ingredients[0] }}
                 </p>
-                <div v-if="recipe.ingredients.length > 0 && !state.loading">
+                <div v-if="recipe.ingredients.length > 0">
                     <label class="label">Ingredients</label>
                     <ul class="list-disc ml-5">
                         <li v-for="(ingredient, index) in recipe.ingredients" :key="index">
@@ -53,20 +54,30 @@
 import { reactive, ref } from "vue"
 import { z } from "zod"
 import { api } from "../utils/apiClient.js"
+import { v4 as uuid } from 'uuid'
+const emit = defineEmits(['add', 'updated', 'remove'])
+
 const modalRef = ref(null)
 
 const recipeSchema = z.object({
     title: z.string().min(3, "Title must be at least 3 characters"),
-    ingredients: z.array(z.string().min(1, { message: "Ingredient must not be empty" }).refine(ingredient => ingredient.trim() !== "", { message: "Ingredient must not be empty space" }).min(1, "At least one ingredient required") ),
-    instructions: z.string().min(10, "Instructions must be at least 10 characters")
+    ingredients: z
+        .array(
+            z
+                .string()
+                .min(1, { message: "Ingredient must not be empty" })
+                .refine((i) => i.trim() !== "", { message: "Ingredient must not be only spaces" })
+        )
+        .min(1, { message: "At least one ingredient required" }),
+    instructions: z.string().min(1, "Instructions must be at least 1 characters")
 })
 
 function openModal() {
-  modalRef.value.showModal()
+    modalRef.value.showModal()
 }
 
 function closeModal() {
-  modalRef.value.close()
+    modalRef.value.close()
 }
 const newIngredient = ref("")
 
@@ -80,9 +91,11 @@ const props = defineProps({
 })
 
 const recipe = reactive({
+    id: props.recipe?.id || uuid(),
     title: props.recipe?.title || "",
     ingredients: props.recipe?.ingredients ? [...props.recipe.ingredients] : [],
-    instructions: props.recipe?.instructions || ""
+    instructions: props.recipe?.instructions || "",
+    updatedAt: props.recipe?.updatedAt || null
 })
 
 function addIngredient() {
@@ -104,14 +117,26 @@ async function saveRecipe() {
         return
     }
     state.loading = true
+    const prop_data = { ...props.recipe }
+
     try {
         if (props.recipe) {
-            await api.put(`/recipes/${props.recipe.id}`, result.data)
+            emit("updated", { ...recipe })
+            result.data.updatedAt = props.recipe.updatedAt
+            const res = await api.put(`/recipes/${props.recipe.id}`, result.data)
+            emit("updated", { ...res.data })
         } else {
-            await api.post("/recipes", result.data)
+            emit("add", { ...recipe })
+            const res = await api.post("/recipes", result.data)
+            emit("updated", { ...recipe, temp_id: recipe.id, id: res.data.id })
         }
-        document.getElementById("my_modal_1").close()
+        modalRef.value.close()
     } catch (error) {
+        if (props.recipe) {
+            emit("updated", { ...prop_data })
+        } else {
+            emit("remove", recipe.id)
+        }
         console.error(error)
     } finally {
         state.loading = false
