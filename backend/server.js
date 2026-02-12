@@ -1,14 +1,27 @@
 import express from "express"
 import cors from "cors"
 import { v4 as uuid } from "uuid"
+import { z } from "zod"
 
 const app = express()
 app.use(cors())
 app.use(express.json())
-// Just for test, No database, We could use a database and add row locking for updates. Idempotency too, transactions, Atomic db operatioons...
+// Just for test, No database for the sake of the exam which feels frontend focused, We could use a database and add row locking for updates. Idempotency too, transactions, Atomic db operatioons...
 // no jwt, no auth, no security everyone can access this end point
 let recipes = []
 let favorites = []
+const recipeSchema = z.object({
+    title: z.string().min(3, "Title must be at least 3 characters"),
+    ingredients: z
+        .array(
+            z
+                .string()
+                .min(1, { message: "Ingredient must not be empty" })
+                .refine((i) => i.trim() !== "", { message: "Ingredient must not be only spaces" })
+        )
+        .min(1, { message: "At least one ingredient required" }),
+    instructions: z.string().min(1, "Instructions must be at least 1 characters")
+})
 
 const delay = () =>
     new Promise(res => setTimeout(res, 300 + Math.random() * 900))
@@ -30,11 +43,13 @@ app.get("/recipes", async (req, res) => {
 app.post("/recipes", async (req, res) => {
     await delay()
     if (maybeFail()) return res.status(500).json({ error: "Server Error: Create Failed, Please Try Again" })
+    const result = recipeSchema.safeParse(req.body)
+    if (!result.success) return res.status(400).json(result.error.flatten())
     const recipe = {
         id: uuid(),
-        title: req.body.title,
-        ingredients: req.body.ingredients,
-        instructions: req.body.instructions,
+        title: result.data.title,
+        ingredients: result.data.ingredients,
+        instructions: result.data.instructions,
         updatedAt: new Date().toISOString()
     }
     recipes.push(recipe)
