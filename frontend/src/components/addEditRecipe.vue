@@ -86,7 +86,9 @@ function resetForm() {
 }
 function closeModal() {
     modalRef.value.close()
-    resetForm()
+    if (!props.recipe) {
+        resetForm()
+    }
 }
 const newIngredient = ref("")
 
