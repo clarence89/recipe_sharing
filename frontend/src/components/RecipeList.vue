@@ -120,13 +120,15 @@ async function toggleFavorite(id) {
   };
 
   localStorage.setItem("favorites", JSON.stringify(toRaw(state.favorites)));
-
+  show(isFavorited ? "Removing from favorites..." : "Adding to favorites...", "info", 3000);
   try {
     if (isFavorited) {
       await api.delete(`/favorites/${id}`)
+      show("Recipe removed from favorites successfully", "success", 3000);
     }
     else {
       await api.post(`/favorites`, { id })
+      show("Recipe added to favorites successfully", "success", 3000);
     };
   } catch (error) {
     if (isFavorited) { 
