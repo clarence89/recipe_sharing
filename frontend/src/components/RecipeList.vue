@@ -90,7 +90,6 @@ async function fetchRecipes(search = "") {
   const response = await api.get("/recipes", { params: { search }, signal: state.searchController.signal })
   state.recipes = response.data;
   } catch (error) {
-    state.searchController.abort();
     errorHandler(error, 3000);
   } finally {
     state.searchController = null;
@@ -108,7 +107,7 @@ async function fetchFavorites() {
   }
 }
 
-const searchRecipes = debounce(fetchRecipes, 100);
+const searchRecipes = debounce(fetchRecipes, 700);
 
 async function toggleFavorite(id) {
   state.button_transactions_status.push(id);

@@ -2,7 +2,6 @@ import express from "express"
 import cors from "cors"
 import { v4 as uuid } from "uuid"
 import { z } from "zod"
-import e from "express"
 
 const app = express()
 app.use(cors())
@@ -33,7 +32,7 @@ app.get("/recipes", async (req, res) => {
     await delay()
     const { search } = req.query
     if (!search) return res.json(recipes)
-    const filtered = recipes.filter(r =>
+    const filtered = recipes.filter(r => r.title.toLowerCase().includes(search.toLowerCase()) || r.instructions.toLowerCase().includes(search.toLowerCase()) ||
         r.ingredients.some(i =>
             i.toLowerCase().includes(search.toLowerCase())
         )
