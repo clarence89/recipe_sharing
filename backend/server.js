@@ -12,7 +12,7 @@ let recipes = []
 const delay = () =>
     new Promise(res => setTimeout(res, 300 + Math.random() * 900))
 
-const maybeFail = () => Math.random() < 0.1
+const maybeFail = () => Math.random() < 0.2
 
 app.get("/recipes", async (req, res) => {
     await delay()
@@ -28,7 +28,7 @@ app.get("/recipes", async (req, res) => {
 
 app.post("/recipes", async (req, res) => {
     await delay()
-    if (maybeFail()) return res.status(500).json({ error: "create failed" })
+    if (maybeFail()) return res.status(500).json({ error: "Server Error: Create Failed, Please Try Again" })
     const recipe = {
         id: uuid(),
         title: req.body.title,
@@ -45,8 +45,8 @@ app.put("/recipes/:id", async (req, res) => {
     const recipe = recipes.find(r => r.id === req.params.id)
     if (!recipe) return res.status(404).json({ error: "not found" })
     if (recipe.updatedAt !== req.body.updatedAt)
-        return res.status(409).json({ error: "version conflict" })
-    if (maybeFail()) return res.status(500).json({ error: "update failed" })
+        return res.status(409).json({ error: "Update Failed: Version Conflict Note: Someone has already updated the recipe" })
+    if (maybeFail()) return res.status(500).json({ error: "Server Error: Update Failed, Please Try Again" })
     const updated = {
         ...recipe,
         title: req.body.title,
@@ -60,7 +60,7 @@ app.put("/recipes/:id", async (req, res) => {
 
 app.delete("/recipes/:id", async (req, res) => {
     await delay()
-    if (maybeFail()) return res.status(500).json({ error: "delete failed" })
+    if (maybeFail()) return res.status(500).json({ error: "Server Error: Delete Failed, Please Try Again" })
     recipes = recipes.filter(r => r.id !== req.params.id)
     res.json({ success: true })
 })

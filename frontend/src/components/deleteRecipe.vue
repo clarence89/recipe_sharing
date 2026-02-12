@@ -17,7 +17,9 @@
 import { reactive, ref } from "vue"
 import { api } from "../utils/apiClient.js"
 import { v4 as uuid } from 'uuid'
-const emit = defineEmits(['add', 'remove', 'permanent_remove'])
+import { useToast } from "../utils/useToast.js"
+const { show, errorHandler } = useToast()
+const emit = defineEmits(['add', 'remove', 'permanent_remove', 'status'])
 
 const modalRef = ref(null)
 
@@ -52,10 +54,11 @@ async function deleteRecipe() {
         emit("remove", recipe.id)
         await api.delete(`/recipes/${props.recipe.id}`)
         emit("permanent_remove", recipe.id)
+        show("Recipe deleted successfully", "success", 3000)
         modalRef.value.close()
     } catch (error) {
         emit("add", recipe.id)
-        console.error(error)
+        errorHandler(error, 3000)
     } finally {
         state.loading = false
     }

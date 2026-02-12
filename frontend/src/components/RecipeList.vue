@@ -1,20 +1,24 @@
 <template>
   <div>
     <div class="flex justify-between">
-      <AddRecipe @add="addRecipe" @updated="updateRecipe" @remove="removeRecipe" />
+      <AddRecipe @add="addRecipe" @updated="updateRecipe" @remove="removeRecipe"/>
       <input class="input" v-model="query" @input="search" placeholder="Search by ingredient" />
     </div>
     <hr class="my-10" />
+    <ToastContainer />
     <div v-if="state.loading" class="text-center py-6 text-gray-500 font-medium">
       Loading...
     </div>
-    
+
     <div v-if="!state.loading && state.recipes.length > 0" class="grid gap-4 grid-cols-1 md:grid-cols-2 xl:grid-cols-3">
-      <div v-for="r in state.recipes.sort((a, b) => state.favorites.includes(a.id) ? -1 : state.favorites.includes(b.id) ? 1 : 0)" :key="r.id" v-show="!r.deleted" class="card bg-base-100 shadow-md">
-        <div  class="card-body">
+      <div
+        v-for="r in state.recipes.sort((a, b) => state.favorites.includes(a.id) ? -1 : state.favorites.includes(b.id) ? 1 : 0)"
+        :key="r.id" v-show="!r.deleted" class="card bg-base-100 shadow-md">
+        <div class="card-body">
           <div class="flex justify-between">
             <h2 class="card-title break-words">{{ r.title }}</h2>
-                        <DeleteRecipe :recipe="r" @add="reAddRecipe" @remove="tempRemove" @permanent_remove="removeRecipe" />
+            <DeleteRecipe :recipe="r" @add="reAddRecipe" @remove="tempRemove" @permanent_remove="removeRecipe"
+              />
           </div>
           <p class="text-gray-600 break-words">{{ r.ingredients.join(', ') }}</p>
           <div class="card-actions justify-between">
@@ -40,6 +44,7 @@ import AddRecipe from "./addEditRecipe.vue";
 import AddEditRecipe from "./addEditRecipe.vue";
 import { api } from "../utils/apiClient.js";
 import DeleteRecipe from "./deleteRecipe.vue";
+import ToastContainer from "./utility/ToastContainer.vue";
 
 const state = reactive({
   recipes: [],

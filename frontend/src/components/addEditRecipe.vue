@@ -55,7 +55,9 @@ import { reactive, ref } from "vue"
 import { z } from "zod"
 import { api } from "../utils/apiClient.js"
 import { v4 as uuid } from 'uuid'
-const emit = defineEmits(['add', 'updated', 'remove'])
+import { useToast } from "../utils/useToast.js"
+const { show, errorHandler } = useToast()
+const emit = defineEmits(['add', 'updated', 'remove', 'status'])
 
 const modalRef = ref(null)
 
@@ -125,10 +127,12 @@ async function saveRecipe() {
             result.data.updatedAt = props.recipe.updatedAt
             const res = await api.put(`/recipes/${props.recipe.id}`, result.data)
             emit("updated", { ...res.data })
+            show("Recipe updated successfully", "success", 3000)
         } else {
             emit("add", { ...recipe })
             const res = await api.post("/recipes", result.data)
-            emit("updated", { ...recipe, temp_id: recipe.id, id: res.data.id })
+            emit("updated", { ...recipe, temp_id: recipe.id, id: res.data.id, updatedAt: res.data.updatedAt })
+            show("Recipe added successfully", "success", 3000)
         }
         modalRef.value.close()
     } catch (error) {
@@ -137,7 +141,7 @@ async function saveRecipe() {
         } else {
             emit("remove", recipe.id)
         }
-        console.error(error)
+        errorHandler(error, 3000)
     } finally {
         state.loading = false
     }
