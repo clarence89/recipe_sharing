@@ -4,7 +4,7 @@
     <dialog ref="modalRef" class="modal">
         <div class="modal-box">
             <fieldset class="fieldset p-4">
-                <legend class="fieldset-legend">Page details</legend>
+                <legend class="fieldset-legend">{{ props.recipe ? "Edit Recipe" : "Add Recipe" }}</legend>
 
                 <label class="label">Title</label>
                 <input type="text" class="input" placeholder="Recipe Title" v-model="recipe.title" />
@@ -42,7 +42,7 @@
 
             </fieldset>
             <div class="modal-action">
-                <button class="btn btn-primary" @click="saveRecipe">Save</button>
+                <button class="btn btn-primary" :disabled="state.loading" @click="saveRecipe">Save</button>
                 <form method="dialog">
                     <button @click="closeModal()" class="btn">Close</button>
                 </form>
@@ -77,9 +77,16 @@ const recipeSchema = z.object({
 function openModal() {
     modalRef.value.showModal()
 }
-
+function resetForm() {
+  Object.keys(initialRecipe).forEach(key => {
+    recipe[key] = initialRecipe[key]
+  })
+  recipe.ingredients = []
+  state.errors = {}
+}
 function closeModal() {
     modalRef.value.close()
+    resetForm()
 }
 const newIngredient = ref("")
 
@@ -92,13 +99,15 @@ const props = defineProps({
     recipe: Object
 })
 
-const recipe = reactive({
-    id: props.recipe?.id || uuid(),
-    title: props.recipe?.title || "",
-    ingredients: props.recipe?.ingredients ? [...props.recipe.ingredients] : [],
-    instructions: props.recipe?.instructions || "",
-    updatedAt: props.recipe?.updatedAt || null
-})
+const initialRecipe = {
+  id: props.recipe?.id || uuid(),
+  title: props.recipe?.title || "",
+  ingredients: props.recipe?.ingredients ? [...props.recipe.ingredients] : [],
+  instructions: props.recipe?.instructions || "",
+  updatedAt: props.recipe?.updatedAt || null
+}
+
+const recipe = reactive({ ...initialRecipe })
 
 function addIngredient() {
     if (newIngredient.value.trim() !== "") {
@@ -134,7 +143,7 @@ async function saveRecipe() {
             emit("updated", { ...recipe, temp_id: recipe.id, id: res.data.id, updatedAt: res.data.updatedAt })
             show("Recipe added successfully", "success", 3000)
         }
-        modalRef.value.close()
+        closeModal()
     } catch (error) {
         if (props.recipe) {
             emit("updated", { ...prop_data })

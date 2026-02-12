@@ -5,7 +5,7 @@
             <h3 class="font-bold text-lg">{{ props.recipe ? 'Delete Recipe' : 'Confirm Delete' }}</h3>
             <p class="py-4">Are you sure you want to delete the recipe "{{ props.recipe.title }}"?</p>
             <div class="modal-action">
-                <button class="btn btn-primary" @click="deleteRecipe">Delete</button>
+                <button class="btn btn-primary" :disabled="state.loading" @click="deleteRecipe">Delete</button>
                 <form method="dialog">
                     <button @click="closeModal()" class="btn">Close</button>
                 </form>

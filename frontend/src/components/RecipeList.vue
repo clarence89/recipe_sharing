@@ -22,7 +22,7 @@
           <p class="text-gray-600 break-words">{{ r.ingredients.join(', ') }}</p>
           <div class="card-actions justify-between">
             <AddEditRecipe :recipe="r" @add="addRecipe" @updated="updateRecipe" @remove="removeRecipe" />
-            <button class="btn btn-sm" :class="state.favorites.includes(r.id) ? 'btn-error' : 'btn-primary'"
+            <button :disabled="state.button_transactions_status.includes(r.id)" class="btn btn-sm" :class="state.favorites.includes(r.id) ? 'btn-error' : 'btn-primary'"
               @click="toggleFavorite(r.id)">
               {{ state.favorites.includes(r.id) ? "Unfavorite" : "Favorite" }}
             </button>
@@ -53,7 +53,8 @@ const state = reactive({
   favorites: JSON.parse(localStorage.getItem("favorites") || "[]"),
   loading: false,
   error: null,
-  searchController: null
+  searchController: null,
+  button_transactions_status: []
 });
 
 const query = ref("");
@@ -109,6 +110,7 @@ async function fetchFavorites() {
 const searchRecipes = debounce(fetchRecipes, 100);
 
 async function toggleFavorite(id) {
+  state.button_transactions_status.push(id);
   const isFavorited = state.favorites.includes(id);
   if (isFavorited) {
     state.favorites = state.favorites.filter(f => f !== id)
@@ -135,6 +137,9 @@ async function toggleFavorite(id) {
     };
     localStorage.setItem("favorites", JSON.stringify(toRaw(state.favorites)));
     show(error.response?.data?.error || error.message || "Failed to update favorite", "error", 3000);
+  }
+  finally {
+      state.button_transactions_status = state.button_transactions_status.filter(f => f !== id);
   }
 }
 
