@@ -129,7 +129,7 @@ async function saveRecipe() {
     }
     state.loading = true
     const prop_data = { ...props.recipe }
-
+    show("Saving recipe...", "info", 3000)
     try {
         if (props.recipe) {
             emit("updated", { ...recipe })

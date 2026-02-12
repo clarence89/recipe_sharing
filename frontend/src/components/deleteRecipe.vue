@@ -50,6 +50,7 @@ const recipe = reactive({
 async function deleteRecipe() {
     state.errors = {}
     state.loading = true
+    show("Deleting recipe...", "info", 3000)
     try {
         emit("remove", recipe.id)
         const promises = [
