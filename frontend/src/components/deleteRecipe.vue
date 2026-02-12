@@ -52,7 +52,11 @@ async function deleteRecipe() {
     state.loading = true
     try {
         emit("remove", recipe.id)
-        await api.delete(`/recipes/${props.recipe.id}`)
+        const promises = [
+            api.delete(`/recipes/${props.recipe.id}`),
+            api.delete(`/favorites/${props.recipe.id}`)
+        ]
+        await Promise.all(promises)
         emit("permanent_remove", recipe.id)
         show("Recipe deleted successfully", "success", 3000)
         modalRef.value.close()

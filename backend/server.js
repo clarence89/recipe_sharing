@@ -2,6 +2,7 @@ import express from "express"
 import cors from "cors"
 import { v4 as uuid } from "uuid"
 import { z } from "zod"
+import e from "express"
 
 const app = express()
 app.use(cors())
@@ -44,7 +45,7 @@ app.post("/recipes", async (req, res) => {
     await delay()
     if (maybeFail()) return res.status(500).json({ error: "Server Error: Create Failed, Please Try Again" })
     const result = recipeSchema.safeParse(req.body)
-    if (!result.success) return res.status(400).json(result.error.flatten())
+    if (!result.success) return res.status(400).json({ error: "Validation Error", details: result.error.flatten() })
     const recipe = {
         id: uuid(),
         title: result.data.title,

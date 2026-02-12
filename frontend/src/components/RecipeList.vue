@@ -153,6 +153,7 @@ onMounted(() => {
   });
 });
 
+onUnmounted(() => state.searchController?.abort());
 
 watch(query, val => {
   searchRecipes(val);
