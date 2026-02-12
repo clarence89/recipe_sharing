@@ -8,6 +8,7 @@ app.use(express.json())
 // Just for test, No database, We could use a database and add row locking for updates. Idempotency too, transactions, Atomic db operatioons...
 // no jwt, no auth, no security everyone can access this end point
 let recipes = []
+let favorites = []
 
 const delay = () =>
     new Promise(res => setTimeout(res, 300 + Math.random() * 900))
@@ -64,5 +65,32 @@ app.delete("/recipes/:id", async (req, res) => {
     recipes = recipes.filter(r => r.id !== req.params.id)
     res.json({ success: true })
 })
+
+// Favorites Endpoints
+app.get("/favorites", async (req, res) => {
+  await delay()
+  res.json(favorites)
+})
+
+app.post("/favorites", async (req, res) => {
+  await delay()
+  if (maybeFail()) return res.status(500).json({ error: "Server Error: Could not add favorite" })
+
+  const { id } = req.body
+  if (!recipes.some(r => r.id === id)) return res.status(404).json({ error: "Recipe not found" })
+
+  if (!favorites.includes(id)) favorites.push(id)
+  res.json({ success: true, favorites })
+})
+
+app.delete("/favorites/:id", async (req, res) => {
+  await delay()
+  if (maybeFail()) return res.status(500).json({ error: "Server Error: Could not remove favorite" })
+
+  const { id } = req.params
+  favorites = favorites.filter(f => f !== id)
+  res.json({ success: true, favorites })
+})
+
 
 app.listen(4000, () => console.log("backend on 4000"))
