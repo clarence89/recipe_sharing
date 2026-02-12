@@ -7,12 +7,11 @@ export const api = axios.create({
 })
 
 axiosRetry(api, {
-  retries: 2,
+  retries: 3,
+  retryDelay: axiosRetry.exponentialDelay,
   retryCondition: (error) => {
-    const method = error.config?.method?.toLowerCase()
-
-    if (method === "delete") return false
-
-    return axiosRetry.isNetworkOrIdempotentRequestError(error)
+    if (!error.response) return true
+    if (error.response.status >= 500) return true
+    return false
   }
 })
