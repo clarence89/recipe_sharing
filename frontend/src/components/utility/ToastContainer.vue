@@ -12,7 +12,7 @@
         v-for="t in toasts"
         :key="t.id"
         class="alert shadow-lg"
-        :class="t.type === 'error' ? 'alert-error' : 'alert-success'"
+        :class="t.type === 'error' ? 'alert-error' : t.type === 'info' ? 'alert-info' : 'alert-success'"
       >
         <span>{{ t.message }}</span>
       </div>
