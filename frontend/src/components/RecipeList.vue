@@ -19,8 +19,19 @@
             <h2 class="card-title break-words">{{ r.title }}</h2>
             <DeleteRecipe :recipe="r" @add="reAddRecipe" @remove="tempRemove" @permanent_remove="removeRecipe" />
           </div>
-          <p class="text-gray-600 break-words">{{ r.ingredients.join(', ') }}</p>
-          <div class="card-actions justify-between">
+          <hr />
+          <div class="flex items-center gap-2">
+            <label class="label">Ingredients:</label>
+            <ul class="list-disc text-gray-600 break-words max-h-[200px] overflow-y-auto">
+              <li v-for="ingredient in r.ingredients" class="whitespace-pre-wrap">{{ ingredient }}</li>
+            </ul>
+          </div>
+          <hr class="border-t border-opacity-10 border-gray-400"/>
+          <div class="flex items-center gap-2">
+            <label class="label">Instructions:</label>
+            <p class="text-gray-600 break-words">{{ r.instructions }}</p>
+          </div>
+          <div class="card-actions justify-between mt-auto">
             <AddEditRecipe :recipe="r" @add="addRecipe" @updated="updateRecipe" @remove="removeRecipe" />
             <button :disabled="state.button_transactions_status.includes(r.id)" class="btn btn-sm" :class="state.favorites.includes(r.id) ? 'btn-error' : 'btn-primary'"
               @click="toggleFavorite(r.id)">

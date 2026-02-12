@@ -58,8 +58,29 @@ import { v4 as uuid } from 'uuid'
 import { useToast } from "../utils/useToast.js"
 const { show, errorHandler } = useToast()
 const emit = defineEmits(['add', 'updated', 'remove', 'status'])
+const props = defineProps({
+    recipe: Object
+})
 
 const modalRef = ref(null)
+const initialRecipe = {
+  id: props.recipe?.id || uuid(),
+  title: props.recipe?.title || "",
+  ingredients: props.recipe?.ingredients ? [...props.recipe.ingredients] : [],
+  instructions: props.recipe?.instructions || "",
+  updatedAt: props.recipe?.updatedAt || null
+}
+const newIngredient = ref("")
+
+const state = reactive({
+    loading: false,
+    errors: {}
+})
+
+
+
+
+const recipe = reactive({ ...initialRecipe })
 
 const recipeSchema = z.object({
     title: z.string().min(3, "Title must be at least 3 characters"),
@@ -81,35 +102,13 @@ function resetForm() {
   Object.keys(initialRecipe).forEach(key => {
     recipe[key] = initialRecipe[key]
   })
-  recipe.ingredients = []
   state.errors = {}
 }
 function closeModal() {
     modalRef.value.close()
-    if (!props.recipe) {
         resetForm()
-    }
+
 }
-const newIngredient = ref("")
-
-const state = reactive({
-    loading: false,
-    errors: {}
-})
-
-const props = defineProps({
-    recipe: Object
-})
-
-const initialRecipe = {
-  id: props.recipe?.id || uuid(),
-  title: props.recipe?.title || "",
-  ingredients: props.recipe?.ingredients ? [...props.recipe.ingredients] : [],
-  instructions: props.recipe?.instructions || "",
-  updatedAt: props.recipe?.updatedAt || null
-}
-
-const recipe = reactive({ ...initialRecipe })
 
 function addIngredient() {
     if (newIngredient.value.trim() !== "") {
