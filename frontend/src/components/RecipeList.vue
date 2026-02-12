@@ -46,7 +46,7 @@ import DeleteRecipe from "./deleteRecipe.vue";
 import ToastContainer from "./utility/ToastContainer.vue";
 import { useToast } from "../utils/useToast.js";
 
-const { show } = useToast();
+const { show, errorHandler } = useToast();
 
 const state = reactive({
   recipes: [],
@@ -86,15 +86,16 @@ async function fetchRecipes(search = "") {
   state.loading = true;
   if (state.searchController) state.searchController.abort();
   state.searchController = new AbortController();
+  try {
   const response = await api.get("/recipes", { params: { search }, signal: state.searchController.signal })
-    .catch(e => {
-      state.error = e.message;
-      state.loading = false;
-      return { data: [] };
-    });
-  state.searchController = null;
   state.recipes = response.data;
-  state.loading = false;
+  } catch (error) {
+    state.searchController.abort();
+    errorHandler(error, 3000);
+  } finally {
+    state.searchController = null;
+    state.loading = false;
+  }
   return state.recipes;
 }
 async function fetchFavorites() {
@@ -103,7 +104,7 @@ async function fetchFavorites() {
     state.favorites = response.data;
     localStorage.setItem("favorites", JSON.stringify(toRaw(state.favorites)));
   } catch (error) {
-    show(error.response?.data?.error || error.message || "Failed to fetch favorites", "error", 3000);
+    errorHandler(error, "Failed to fetch favorites");
   }
 }
 
@@ -136,7 +137,7 @@ async function toggleFavorite(id) {
       state.favorites = state.favorites.filter(f => f !== id) 
     };
     localStorage.setItem("favorites", JSON.stringify(toRaw(state.favorites)));
-    show(error.response?.data?.error || error.message || "Failed to update favorite", "error", 3000);
+    errorHandler(error, 3000);
   }
   finally {
       state.button_transactions_status = state.button_transactions_status.filter(f => f !== id);
@@ -149,7 +150,7 @@ onMounted(() => {
     fetchRecipes()
   ])
   .catch(err => {
-    console.error("Failed to load initial data:", err);
+    show("Failed to load recipes or favorites", "error", 3000);
   });
 });
 
