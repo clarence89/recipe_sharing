@@ -1,36 +1,52 @@
 <template>
   <div>
-    <input v-model="query" @input="search" placeholder="Search by ingredient"/>
+    <div class="flex justify-between">
+      <AddRecipe />
+      <input class="input" v-model="query" @input="search" placeholder="Search by ingredient"/>
+    </div>
+    <hr class="my-10"/>
     <div v-if="state.loading">Loading...</div>
-    <div v-for="r in state.recipes" :key="r.id">
+    <div class="flex" v-for="r in state.recipes" :key="r.id">
       <h3>{{ r.title }}</h3>
       <button @click="toggleFavorite(r.id)">
         {{ state.favorites.includes(r.id) ? "Unfavorite" : "Favorite" }}
       </button>
     </div>
+    
   </div>
+  
 </template>
 
 <script setup>
 import { onMounted, reactive, ref, watch } from "vue";
 import debounce from "../utils/debouncer.js";
-const initialRecipes = [
-        { id: 1, title: "Pasta", ingredients: ["pasta", "tomato", "basil"] },
-        { id: 2, title: "Salad", ingredients: ["lettuce", "tomato", "cucumber"] },
-        { id: 3, title: "Pizza", ingredients: ["dough", "tomato", "cheese"] }
-    ]
+import axios from "axios";
+import AddRecipe from "./addRecipe.vue";
+const api = axios.create({
+  baseURL: "http://localhost:4000"
+})
 const state = reactive({
     recipes: [],
     favorites: JSON.parse(localStorage.getItem("favorites") || "[]"),
     loading: false,
     error: null,
+    searchController: null
   });
 const query = ref("");
 
-function fetchRecipes(search="") {
+async function fetchRecipes(search="") {
   // Axios call
   state.loading = true;
-  state.recipes = initialRecipes.filter(r => r.ingredients.some(i => i.includes(search)));
+  if (state.searchController) {
+    state.searchController.abort();
+  }
+  state.searchController = new AbortController();
+  const response = await api.get("/recipes", { params: { search }, signal: state.searchController.signal }).catch(e => {
+    state.error = e.message;
+    state.loading = false;
+    return { data: [] }
+  });
+  state.recipes = response.data;
   state.loading = false;
   return state.recipes
 }
