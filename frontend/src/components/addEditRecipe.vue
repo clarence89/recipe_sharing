@@ -102,6 +102,13 @@ function resetForm() {
   Object.keys(initialRecipe).forEach(key => {
     recipe[key] = initialRecipe[key]
   })
+
+  recipe.ingredients = []
+  if (props.recipe) {
+    recipe.ingredients = [...props.recipe.ingredients]
+  }else{
+    recipe.id = uuid()
+  }
   state.errors = {}
 }
 function closeModal() {
@@ -123,7 +130,11 @@ function removeIngredient(index) {
 
 async function saveRecipe() {
     state.errors = {}
+    if (newIngredient.value.trim() !== "") {
+        addIngredient()
+    }
     const result = recipeSchema.safeParse(recipe)
+
     if (!result.success) {
         state.errors = result.error.flatten().fieldErrors
         return
